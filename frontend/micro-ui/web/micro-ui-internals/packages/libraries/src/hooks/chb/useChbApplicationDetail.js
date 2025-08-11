@@ -42,10 +42,7 @@ const useChbApplicationDetail = (t, tenantId, applicationNo, config = {}, userTy
     
   
   const defaultSelect = (data) => {
-     let applicationDetails = data.applicationDetails.map((obj) => {
-      return obj;
-    });
-    
+     let applicationDetails = data.applicationDetails || {};
     return {
       applicationData : data,
       applicationDetails
@@ -53,7 +50,7 @@ const useChbApplicationDetail = (t, tenantId, applicationNo, config = {}, userTy
   };
 
   return useQuery(
-    ["APPLICATION_SEARCH", "CHB_SEARCH", applicationNo, userType, args],
+    [applicationNo, userType, args],
     () => CHBSearch.applicationDetails(t, tenantId, applicationNo, userType, args),
     { select: defaultSelect, ...config }
  

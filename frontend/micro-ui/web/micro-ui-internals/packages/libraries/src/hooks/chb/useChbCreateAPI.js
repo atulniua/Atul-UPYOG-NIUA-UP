@@ -28,9 +28,7 @@ export const useChbCreateAPI = (tenantId, type = true) => {
       CHBServices.create(data, tenantId));
     
   } 
-  else {
     return useMutation((data) => CHBServices.update(data, tenantId));
-  }
 };
 
 export default useChbCreateAPI;

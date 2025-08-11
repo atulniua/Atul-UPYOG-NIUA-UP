@@ -6,10 +6,7 @@ const useADSApplicationDetail = (t, tenantId, bookingNo, config = {}, userType, 
     
   
   const defaultSelect = (data) => {    
-     let applicationDetails = data.applicationDetails.map((obj) => {
-    
-      return obj;
-    });
+     let applicationDetails = data.applicationDetails || {};
 
     return {
       applicationData : data,
@@ -18,7 +15,7 @@ const useADSApplicationDetail = (t, tenantId, bookingNo, config = {}, userType, 
   };
 
   return useQuery(
-    ["APPLICATION_SEARCH", "ADS_SEARCH", bookingNo, userType, args],
+    [bookingNo, userType, args],
     () => ADSSearch.applicationDetails(t, tenantId, bookingNo, userType, args),
     { select: defaultSelect, ...config }
  
