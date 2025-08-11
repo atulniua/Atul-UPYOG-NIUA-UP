@@ -10,7 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.upyog.gis.exception.GISException;
+
 import org.upyog.gis.service.ModuleSpatialService;
 import org.upyog.gis.util.GISConstants;
 import org.upyog.gis.web.contracts.GISSearchRequest;
@@ -39,9 +39,9 @@ public class PropertySpatialServiceImpl implements ModuleSpatialService {
             // Property IDs and references
             "propertyIds", "propertyDetailids", "oldpropertyids", "acknowledgementIds", "uuids", "ownerIds",
             // Owner information
-            "mobileNumber", "name", "documentNumbers",
+            "mobileNumber", "name",
             // Property details
-            "propertyType", "ownershipCategory", "usageCategory", "doorNo", "oldPropertyId",
+            "propertyType", "ownershipCategory", "usageCategory", "oldPropertyId",
             // Location details
             "locality", "city", "district", "state", "pincode",
             // Status and workflow
@@ -66,11 +66,11 @@ public class PropertySpatialServiceImpl implements ModuleSpatialService {
      * 
      * @param request GIS search request with criteria
      * @return List of spatial entities with geometry and properties
-     * @throws GISException if unable to fetch data from property service
+     * @throws RuntimeException if unable to fetch data from property service
      */
     @Override
     public List<Map<String, Object>> fetchSpatialData(GISSearchRequest request) {
-        log.info("=== PROPERTY SPATIAL FETCH START === RequestId: {}, Criteria: {}", 
+        log.info("Property spatial data fetch started. RequestId: {}, Criteria: {}", 
                 request.getRequestInfo().getMsgId(), request.getSearchCriteria());
 
         try {
@@ -79,18 +79,18 @@ public class PropertySpatialServiceImpl implements ModuleSpatialService {
             HttpEntity<Map<String, Object>> httpEntity = buildHttpEntity(requestInfoWrapper);
             
             String url = builder.toUriString();
-            log.info("=== PROPERTY SERVICE CALL === RequestId: {}, URL: {}", 
+            log.debug("Calling property service. RequestId: {}, URL: {}", 
                     request.getRequestInfo().getMsgId(), url);
             
             Map<String, Object> response = callPropertyService(url, httpEntity);
-            log.info("=== PROPERTY SERVICE RESPONSE === RequestId: {}, ResponseSize: {}", 
+            log.debug("Property service response received. RequestId: {}, ResponseSize: {}", 
                     request.getRequestInfo().getMsgId(), response != null ? response.size() : 0);
             return transformPropertyResponse(response);
 
         } catch (Exception e) {
-            log.error("=== PROPERTY SPATIAL FETCH ERROR === RequestId: {}, Error: {}", 
+            log.error("Failed to fetch spatial data from property service. RequestId: {}, Error: {}", 
                     request.getRequestInfo().getMsgId(), e.getMessage());
-            throw new GISException(GISConstants.ERROR_FETCHING_SPATIAL_DATA, e);
+            throw new RuntimeException("Failed to fetch spatial data from property service: " + e.getMessage(), e);
         }
     }
 
@@ -167,6 +167,7 @@ public class PropertySpatialServiceImpl implements ModuleSpatialService {
     @Override
     public void validateSearchCriteria(Map<String, Object> searchCriteria) {
         if (searchCriteria == null || searchCriteria.isEmpty()) {
+            log.info("Search Criteria is Empty");
             return; // Allow empty criteria to fetch all properties
         }
 
@@ -189,13 +190,13 @@ public class PropertySpatialServiceImpl implements ModuleSpatialService {
         List<Map<String, Object>> spatialData = new ArrayList<>();
 
         if (response == null || !response.containsKey("Properties")) {
-            log.warn("=== PROPERTY RESPONSE TRANSFORM === No Properties found in response");
+            log.warn("No properties found in response");
             return spatialData;
         }
 
         List<Map<String, Object>> properties = (List<Map<String, Object>>) response.get("Properties");
         
-        log.info("=== PROPERTY RESPONSE TRANSFORM === Processing {} properties", properties.size());
+        log.debug("Processing {} properties for spatial data transformation", properties.size());
         
         for (Map<String, Object> property : properties) {
             try {
@@ -204,12 +205,12 @@ public class PropertySpatialServiceImpl implements ModuleSpatialService {
                     spatialData.add(transformedProperty);
                 }
             } catch (Exception e) {
-                log.error("=== PROPERTY TRANSFORM ERROR === PropertyId: {}, Error: {}", 
+                log.error("Failed to transform property. PropertyId: {}, Error: {}", 
                         property.get("propertyId"), e.getMessage());
             }
         }
 
-        log.info("=== PROPERTY RESPONSE TRANSFORM SUCCESS === Transformed {} properties", spatialData.size());
+        log.debug("Successfully transformed {} properties to spatial data", spatialData.size());
         return spatialData;
     }
 

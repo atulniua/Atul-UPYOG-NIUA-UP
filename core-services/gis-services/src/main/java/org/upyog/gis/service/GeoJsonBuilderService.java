@@ -2,7 +2,7 @@ package org.upyog.gis.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.upyog.gis.exception.GISException;
+
 import org.upyog.gis.util.GISConstants;
 import org.upyog.gis.web.contracts.GISSearchResponse;
 
@@ -26,7 +26,7 @@ public class GeoJsonBuilderService {
      * @return GeoJSON FeatureCollection response
      */
     public GISSearchResponse.GeoJsonResponse buildGeoJsonResponse(List<Map<String, Object>> spatialData) {
-        log.info("=== GEOJSON BUILD START === InputSize: {}", spatialData.size());
+        log.debug("Building GeoJSON response for {} spatial entities", spatialData.size());
 
         List<GISSearchResponse.Feature> features = new ArrayList<>();
 
@@ -38,7 +38,7 @@ public class GeoJsonBuilderService {
                 }
             } catch (Exception e) {
                 String propertyId = (String) entity.get("propertyId");
-                log.error("=== GEOJSON FEATURE BUILD ERROR === PropertyId: {}, Error: {}", propertyId, e.getMessage());
+                log.error("Failed to build GeoJSON feature for property: {}, Error: {}", propertyId, e.getMessage());
             }
         }
 
@@ -47,7 +47,7 @@ public class GeoJsonBuilderService {
                 .features(features)
                 .build();
         
-        log.info("=== GEOJSON BUILD SUCCESS === FeaturesBuilt: {}", features.size());
+        log.debug("GeoJSON response built successfully with {} features", features.size());
         return response;
     }
 
@@ -121,7 +121,7 @@ public class GeoJsonBuilderService {
                 return null;
             }
         } catch (Exception e) {
-            log.error("=== WKT PARSE ERROR === Geometry: {}, Error: {}", wktGeometry, e.getMessage());
+            log.error("Failed to parse WKT geometry: {}, Error: {}", wktGeometry, e.getMessage());
             return null;
         }
     }

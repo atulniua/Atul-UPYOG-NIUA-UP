@@ -21,7 +21,7 @@ public class GISSpatialService {
     private GeoJsonBuilderService geoJsonBuilderService;
 
     public GISSearchResponse searchSpatialData(GISSearchRequest request) {
-        log.info("=== GIS SPATIAL SERVICE START === Module: {}, RequestId: {}", 
+        log.info("Searching spatial data Module: {}, RequestId: {}",
                 request.getModule(), request.getRequestInfo().getMsgId());
 
         // Find the appropriate module service

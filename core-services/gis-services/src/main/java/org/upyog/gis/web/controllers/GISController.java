@@ -5,9 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.upyog.gis.exception.GISException;
+
 import org.upyog.gis.service.GISSpatialService;
-import org.upyog.gis.util.ResponseInfoFactory;
 import org.upyog.gis.web.contracts.GISSearchRequest;
 import org.upyog.gis.web.contracts.GISSearchResponse;
 import org.egov.common.contract.response.ResponseInfo;
@@ -25,9 +24,6 @@ public class GISController {
 
     @Autowired
     private GISSpatialService gisSpatialService;
-
-    @Autowired
-    private ResponseInfoFactory responseInfoFactory;
 
     /**
      * Dynamic GIS search endpoint for any module
@@ -49,48 +45,26 @@ public class GISController {
             @Valid @RequestBody GISSearchRequest request) {
 
         String module = request.getModule();
-        log.info("=== GIS SEARCH START === Module: {}, Tenant: {}, RequestId: {}", 
+        log.info("GIS search request received. Module: {}, Tenant: {}, RequestId: {}", 
                 module, request.getTenantId(), request.getRequestInfo().getMsgId());
 
         try {
             GISSearchResponse response = gisSpatialService.searchSpatialData(request);
-            ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(
-                    request.getRequestInfo(), true);
-            response.setResponseInfo(responseInfo);
+            response.setResponseInfo(new ResponseInfo());
 
-            log.info("=== GIS SEARCH SUCCESS === Module: {}, Results: {}, RequestId: {}", 
+            log.info("GIS search completed successfully. Module: {}, Results: {}, RequestId: {}", 
                     module, response.getTotalCount(), request.getRequestInfo().getMsgId());
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
-            log.error("=== GIS SEARCH ERROR (VALIDATION) === Module: {}, RequestId: {}, Error: {}", 
+            log.error("GIS search validation error. Module: {}, RequestId: {}, Error: {}", 
                     module, request.getRequestInfo().getMsgId(), e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(buildErrorResponse(request, e.getMessage()));
-
-        } catch (GISException e) {
-            log.error("=== GIS SEARCH ERROR (SERVICE) === Module: {}, RequestId: {}, Error: {}", 
-                    module, request.getRequestInfo().getMsgId(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(buildErrorResponse(request, e.getMessage()));
+            return ResponseEntity.badRequest().build();
 
         } catch (Exception e) {
-            log.error("=== GIS SEARCH ERROR (UNEXPECTED) === Module: {}, RequestId: {}, Error: {}", 
+            log.error("GIS search unexpected error. Module: {}, RequestId: {}, Error: {}", 
                     module, request.getRequestInfo().getMsgId(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(buildErrorResponse(request, "Internal server error: " + e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    private GISSearchResponse buildErrorResponse(GISSearchRequest request, String errorMessage) {
-        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(
-                request.getRequestInfo(), false, errorMessage);
-        
-        return GISSearchResponse.builder()
-                .responseInfo(responseInfo)
-                .module(request.getModule())
-                .tenantId(request.getTenantId())
-                .totalCount(0L)
-                .build();
     }
 }
