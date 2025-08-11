@@ -49,8 +49,12 @@ public class BathRoomExtract extends FeatureExtract {
                     		+ layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + f.getNumber() + "_"
                     		+ layerNames.getLayerName("LAYER_NAME_BATH_STORE_VENTILATION");
                     ventilationBS = Util.getPolyLinesByLayer(planDetail.getDoc(), ventilationLayerName);
-                    ventilationMeasurements = ventilationBS.stream()
-                    		.map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true)).collect(Collectors.toList());
+                       if (ventilationBS != null) {
+                        ventilationMeasurements = ventilationBS.stream()
+                            .map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true)).collect(Collectors.toList());
+                       } else {
+                          ventilationMeasurements = new ArrayList<>();
+                       }
                     rooms = Util.getPolyLinesByLayer(planDetail.getDoc(), layerName);
                     roomMeasurements = rooms.stream()
                             .map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true)).collect(Collectors.toList());

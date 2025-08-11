@@ -167,10 +167,6 @@ public class Room {
 		this.waterClosetVentialtion = waterClosetVentialtion;
 	}
 
-	public List<Measurement> getWaterClosetVentilation() {
-		return waterClosetVentialtion;
-	}
-
 	public void setWaterClosetVentilation(List<Measurement> waterClosetVentialtion) {
 		this.waterClosetVentialtion = waterClosetVentialtion;
 	}

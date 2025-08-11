@@ -123,8 +123,8 @@ public class Floor extends Measurement {
 
 
 	private List<RoofArea> roofAreas = new ArrayList<>();
-    
-    private List<BigDecimal> splitLevelBasementParkingHeights;
+
+    private List<BigDecimal> splitLevelBasementParkingHeights = new ArrayList<>();
 
     public List<BigDecimal> getSplitLevelBasementParkingHeights() {
         return splitLevelBasementParkingHeights;

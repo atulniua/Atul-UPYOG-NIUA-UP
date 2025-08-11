@@ -97,7 +97,7 @@ public class Building extends Measurement {
 
     private BigDecimal floorsAboveGround;
     
-    private BigDecimal furthestCornerOfTheBuilding;
+    private BigDecimal furthestCornerOfTheBuilding = BigDecimal.ZERO;
 
     public BigDecimal getFurthestCornerOfTheBuilding() {
 		return furthestCornerOfTheBuilding;
