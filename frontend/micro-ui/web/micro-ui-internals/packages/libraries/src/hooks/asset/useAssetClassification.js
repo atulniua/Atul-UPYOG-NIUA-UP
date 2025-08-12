@@ -7,12 +7,8 @@ const useAssetClassification = (tenantId, moduleCode, type, config = {}) => {
   };
   
 
-  switch (type) {
-    case "assetClassification":
-      return useAsset();
-    default:
-      return null;
-  }
+  return type === "assetClassification" ? useAsset() : null;
+
 };
 
 

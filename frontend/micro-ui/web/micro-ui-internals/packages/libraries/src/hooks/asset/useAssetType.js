@@ -6,13 +6,8 @@ const useAssetType = (tenantId, moduleCode, type,  config = {}) => {
     return useQuery("ASSET_PARENT_CATEGORY", () => MdmsService.AssetTypeParent(tenantId, moduleCode ,type), config);
   };
   
+  return type === "assetParentCategory" ? useAssetsecond() : null;   
 
-  switch (type) {
-    case "assetParentCategory":
-      return useAssetsecond();
-    default:
-      return null;
-  }
 };
 
 

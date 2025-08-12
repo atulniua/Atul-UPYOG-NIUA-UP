@@ -6,13 +6,7 @@ const useAssetparentSubType = (tenantId, moduleCode, type, config = {}) => {
     return useQuery("AST_PARENT_SUB_TYPE", () => MdmsService.AST_PARENT(tenantId, moduleCode ,type), config);
   };
   
-
-  switch (type) {
-    case "assetSubCategory":
-      return useAssetparentsubsub();
-    default:
-      return null;
-  }
+  return type === "assetSubCategory" ? useAssetparentsubsub() : null;
 };
 
 
