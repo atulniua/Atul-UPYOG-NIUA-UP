@@ -179,7 +179,7 @@ public class WaterClosets_Assam extends WaterClosets {
 	private void processWCVentilation(Floor floor, ScrutinyDetail scrutinyDetail, Plan pl) {
 	    LOG.debug("Processing Water Closet Ventilation validation for floor {}", floor.getNumber());
 
-	    List<Measurement> wcVentilation = floor.getWaterClosets().getWaterClosetVentilation();
+	    List<Measurement> wcVentilation = floor.getWaterClosets().getWaterClosetVentialtion();
 
 	    if (wcVentilation == null || wcVentilation.isEmpty()) {
 	        LOG.warn("Water closet ventilation missing for floor {}", floor.getNumber());
