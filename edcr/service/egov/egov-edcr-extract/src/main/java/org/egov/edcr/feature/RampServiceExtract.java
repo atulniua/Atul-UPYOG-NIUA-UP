@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,11 +14,14 @@ import org.egov.common.entity.edcr.DARoom;
 import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Ramp;
+import org.egov.common.entity.edcr.RampLanding;
 import org.egov.common.entity.edcr.TypicalFloor;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
 import org.egov.edcr.utility.Util;
+import org.kabeja.dxf.DXFDocument;
 import org.kabeja.dxf.DXFLWPolyline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +55,11 @@ public class RampServiceExtract extends FeatureExtract {
                         daRamp.setPresentInDxf(true);
                         daRamp.setSlope(slope);
                         block.addDARamps(daRamp);
+                    	String landingNamePattern = String.format(layerNames.getLayerName("LAYER_NAME_DA_RAMP_LANDING"),
+    							block.getNumber(), "+\\d");
+
+    					addRampLanding(pl, landingNamePattern, daRamp);
+                        
                     }
 
                 }
@@ -118,7 +127,7 @@ public class RampServiceExtract extends FeatureExtract {
                                         }
                                         BigDecimal minEntranceHeight = extractMinEntranceHeight(pl, rmpLayer);
                                         ramp.setMinEntranceHeight(minEntranceHeight);
-
+                                       
                                         floor.addRamps(ramp);
                                     }
                                 }
@@ -165,6 +174,49 @@ public class RampServiceExtract extends FeatureExtract {
 	    }
 	    return entranceHeight;
 	}
+	
+	private void addRampLanding(PlanDetail pl, String landingNamePattern, DARamp daRamp) {
+		DXFDocument doc = pl.getDoc();
+	    List<String> landingLayerNames = Util.getLayerNamesLike(doc, landingNamePattern);
+		List<RampLanding> landings = new ArrayList<>();
+
+		for (String landingLayer : landingLayerNames) {
+
+			RampLanding rampLanding = new RampLanding();
+
+			String[] landingNo = landingLayer.split("_");
+
+			rampLanding.setNumber(landingNo[7]);
+
+			List<DXFLWPolyline> landingPolyLines = Util.getPolyLinesByLayer(doc, landingLayer);
+
+			boolean isClosed = landingPolyLines.stream().allMatch(dxflwPolyline -> dxflwPolyline.isClosed());
+
+			rampLanding.setLandingClosed(isClosed);
+
+			List<Measurement> landingPolyLinesMeasurement = landingPolyLines.stream()
+					.map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true)).collect(Collectors.toList());
+
+			rampLanding.setLandings(landingPolyLinesMeasurement);
+
+			// set length of flight
+			List<BigDecimal> landingLengths = Util.getListOfDimensionByColourCode(pl, landingLayer,
+					DxfFileConstants.STAIR_FLIGHT_LENGTH_COLOR);
+
+			rampLanding.setLengths(landingLengths);
+
+			// set width of flight
+			List<BigDecimal> landingWidths = Util.getListOfDimensionByColourCode(pl, landingLayer,
+					DxfFileConstants.STAIR_FLIGHT_WIDTH_COLOR);
+
+			rampLanding.setWidths(landingWidths);
+
+			landings.add(rampLanding);
+		}
+
+		daRamp.setLandings(landings);
+	}
+
 
 
     @Override

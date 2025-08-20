@@ -86,6 +86,8 @@ public class DxfFileConstants {
     public static final int YARD_DIMENSION_COLOR = 2;
     public static final int STAIR_FLIGHT_LENGTH_COLOR = 1;
     public static final int STAIR_FLIGHT_WIDTH_COLOR = 2;
+    public static final int RAMP_FLIGHT_LENGTH_COLOR = 1;
+    public static final int RAMP_FLIGHT_WIDTH_COLOR = 2;
     public static final int INDEX_COLOR_ONE = 1;
     public static final int INDEX_COLOR_TWO = 2;
 

@@ -28,9 +28,9 @@
  *         Legal Notice.
  *      Further, all user interfaces, including but not limited to citizen facing interfaces,
  *         Urban Local Bodies interfaces, dashboards, mobile applications, of the program and any
- *         derived works should carry eGovernments Foundation logo on the top right corner.
+ *         derived works should carry eGovernments Foundation LOGGERo on the top right corner.
  *
- *      For the logo, please refer http://egovernments.org/html/logo/egov_logo.png.
+ *      For the LOGGERo, please refer http://egovernments.org/html/LOGGERo/egov_LOGGERo.png.
  *      For any further queries on attribution, including queries on brand guidelines,
  *         please contact contact@egovernments.org
  *
@@ -47,10 +47,27 @@
 
 package org.egov.edcr.feature;
 
-import static org.egov.edcr.constants.CommonFeatureConstants.*;
-import static org.egov.edcr.constants.CommonKeyConstants.*;
+import static org.egov.edcr.constants.CommonFeatureConstants.DA_RAMP;
+import static org.egov.edcr.constants.CommonFeatureConstants.DA_RAMP_DEFINED;
+import static org.egov.edcr.constants.CommonFeatureConstants.DA_RAMP_LANDING;
+import static org.egov.edcr.constants.CommonFeatureConstants.DA_RAMP_MAX_SLOPE;
+import static org.egov.edcr.constants.CommonFeatureConstants.DA_RAMP_SLOPE;
+import static org.egov.edcr.constants.CommonFeatureConstants.DA_ROOM;
+import static org.egov.edcr.constants.CommonFeatureConstants.EMPTY_STRING;
+import static org.egov.edcr.constants.CommonFeatureConstants.FLOOR;
+import static org.egov.edcr.constants.CommonFeatureConstants.LESS_THAN_SLOPE;
+import static org.egov.edcr.constants.CommonFeatureConstants.MIN_NUMBER_DA_ROOMS;
+import static org.egov.edcr.constants.CommonFeatureConstants.RAMP_MAX_SLOPE;
+import static org.egov.edcr.constants.CommonFeatureConstants.RAMP_MIN_WIDTH;
+import static org.egov.edcr.constants.CommonFeatureConstants.RAMP_POLYLINE_ERROR;
+import static org.egov.edcr.constants.CommonFeatureConstants.UNDERSCORE;
+import static org.egov.edcr.constants.CommonKeyConstants.BLOCK;
+import static org.egov.edcr.constants.CommonKeyConstants.DA_RAMP_NUMBER;
+import static org.egov.edcr.constants.CommonKeyConstants.SLOPE_STRING;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
-import static org.egov.edcr.constants.EdcrReportConstants.*;
+import static org.egov.edcr.constants.EdcrReportConstants.SUBRULE_50_C_4_B;
+import static org.egov.edcr.constants.EdcrReportConstants.SUBRULE_50_C_4_B_SLOPE_DESCRIPTION;
+import static org.egov.edcr.constants.EdcrReportConstants.SUBRULE_50_C_4_B_SLOPE_MAN_DESC;
 import static org.egov.edcr.service.FeatureUtil.addScrutinyDetailtoPlan;
 import static org.egov.edcr.service.FeatureUtil.mapReportDetails;
 
@@ -63,9 +80,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.egov.common.entity.edcr.*;
+import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.DARamp;
+import org.egov.common.entity.edcr.FeatureEnum;
+import org.egov.common.entity.edcr.Floor;
+import org.egov.common.entity.edcr.Measurement;
+import org.egov.common.entity.edcr.OccupancyType;
+import org.egov.common.entity.edcr.OccupancyTypeHelper;
+import org.egov.common.entity.edcr.Plan;
+import org.egov.common.entity.edcr.Ramp;
+import org.egov.common.entity.edcr.RampLanding;
+import org.egov.common.entity.edcr.RampServiceRequirement;
+import org.egov.common.entity.edcr.ReportScrutinyDetail;
+import org.egov.common.entity.edcr.Result;
+import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.service.MDMSCacheManager;
 import org.egov.edcr.utility.DcrConstants;
@@ -76,7 +107,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RampService_Assam extends RampService {
-	private static final Logger LOG = LogManager.getLogger(RampService_Assam.class);
+	private static final Logger LOGGER = LogManager.getLogger(RampService_Assam.class);
 
     @Autowired
 	MDMSCacheManager cache;
@@ -171,6 +202,14 @@ public class RampService_Assam extends RampService {
             if (daRamp != null && daRamp.getSlope() != null && daRamp.getSlope().compareTo(BigDecimal.valueOf(0)) > 0) {
                 isSlopeDefined = true;
             }
+
+    		OccupancyTypeHelper mostRestrictiveOccupancyType = block.getBuilding().getMostRestrictiveFarHelper();
+            ScrutinyDetail scrutinyDetail = createScrutinyDetail(DA_RAMP_LANDING, block.getNumber(), false);
+        	List<RampLanding> landings = daRamp.getLandings();
+			if (!landings.isEmpty()) {
+				validateLanding(pl, block, scrutinyDetail, mostRestrictiveOccupancyType,
+						 daRamp, landings);
+			} 
         }
         if (!isSlopeDefined) {
             errors.put(String.format(DcrConstants.RAMP_SLOPE, EMPTY_STRING, block.getNumber()),
@@ -180,6 +219,105 @@ public class RampService_Assam extends RampService {
             pl.addErrors(errors);
         }
     }
+
+    /**
+     * Validates the width of ramp landings against required minimum width
+     * based on the building plan, block, and occupancy type. It processes
+     * each RampLanding in the provided list, checks if their widths meet
+     * the minimum requirements, and sets report output details accordingly.
+     * Detailed debug logs are recorded throughout the process.
+     *
+     * @param plan the building plan containing overall project details
+     * @param block the specific block of the building under scrutiny
+     * @param scrutinyDetailLanding the scrutiny detail object for reporting validation results
+     * @param mostRestrictiveOccupancyType the occupancy type helper which defines restrictions to consider
+     * @param daRamp the DARamp object related to the ramp under validation
+     * @param landings the list of RampLanding objects to validate
+     */
+    
+    private void validateLanding(Plan plan, Block block, ScrutinyDetail scrutinyDetailLanding,
+            OccupancyTypeHelper mostRestrictiveOccupancyType, 
+            DARamp daRamp, List<RampLanding> landings) {
+
+        LOGGER.debug("Starting validateLanding with {} landings", landings.size());
+        
+        for (RampLanding landing : landings) {
+            List<BigDecimal> widths = landing.getWidths();
+            if (!widths.isEmpty()) {
+                BigDecimal landingWidth = widths.stream().reduce(BigDecimal::min).get();
+                LOGGER.debug("Minimum width from landing widths: {}", landingWidth);
+
+                BigDecimal minWidth = BigDecimal.ZERO;
+                boolean valid = false;
+
+                minWidth = Util.roundOffTwoDecimal(landingWidth);
+                BigDecimal minimumWidth = getRequiredWidth(plan, block, mostRestrictiveOccupancyType);
+                LOGGER.debug("Required minimum width: {}, Rounded landing width: {}", minimumWidth, minWidth);
+
+                if (minWidth.compareTo(minimumWidth) >= 0) {
+                    valid = true;
+                    LOGGER.debug("Landing width is valid");
+                } else {
+                    LOGGER.debug("Landing width is NOT valid");
+                }
+
+                Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
+
+                if (valid) {
+                    setReportOutputDetails(plan, SUBRULE_50_C_4_B,
+                        String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION,
+                            mapOfRampNumberAndSlopeValues.get(DA_RAMP_NUMBER)),
+                        minimumWidth.toString(), minWidth.toString(),
+                        Result.Accepted.getResultVal(), scrutinyDetailLanding);
+                    LOGGER.debug("Report output set as Accepted");
+                } else {
+                    setReportOutputDetails(plan, SUBRULE_50_C_4_B,
+                        String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, EMPTY_STRING),
+                        minimumWidth.toString(), minWidth.toString(),
+                        Result.Not_Accepted.getResultVal(), scrutinyDetailLanding);
+                    LOGGER.debug("Report output set as Not Accepted");
+                }
+
+            } else {
+                LOGGER.warn("No widths found for a landing; skipping validation");
+            }
+        }
+    }
+    /**
+     * Retrieves the required minimum ramp width based on the given building plan,
+     * block, and the most restrictive occupancy type. It looks up applicable
+     * ramp service rules from the cache and returns the corresponding width.
+     * If no matching rule is found, it returns zero.
+     *
+     * @param pl the building plan for which width requirement is sought
+     * @param block the block of the building considered in validation
+     * @param mostRestrictiveOccupancyType the occupancy type helper indicating restrictions
+     * @return the required ramp width as a BigDecimal; zero if no rule applies
+     */
+    private BigDecimal getRequiredWidth(Plan pl, Block block, OccupancyTypeHelper mostRestrictiveOccupancyType) {
+        LOGGER.debug("Getting required width for plan: {}, block: {}, occupancyType: {}",
+                pl, block, mostRestrictiveOccupancyType);
+
+        BigDecimal value = BigDecimal.ZERO;
+
+        List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.RAMP_SERVICE.getValue(), false);
+        Optional<RampServiceRequirement> matchedRule = rules.stream()
+                .filter(RampServiceRequirement.class::isInstance)
+                .map(RampServiceRequirement.class::cast)
+                .findFirst();
+
+        if (matchedRule.isPresent()) {
+            RampServiceRequirement rule = matchedRule.get();
+            value = rule.getRampServiceWidth();
+            LOGGER.debug("Found matching ramp service rule with width: {}", value);
+        } else {
+            value = BigDecimal.ZERO;
+            LOGGER.warn("No matching ramp service rule found; returning width zero");
+        }
+
+        return value;
+    }
+
 
     /**
      * Adds an error to the Plan indicating the absence of a required DA ramp in the block.

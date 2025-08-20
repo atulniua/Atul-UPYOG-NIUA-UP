@@ -17,6 +17,7 @@ public class DxfFileConstants {
     public static final String H = "H"; // Storage
     public static final String I = "I"; // Hazardous
     public static final String J = "J"; // Factories
+    public static final String K = "K"; // Govt/public office
 
     // sub occupancies code
     public static final String A2 = "A2";// Old Age Home

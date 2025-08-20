@@ -216,6 +216,20 @@ public class EdcrReportConstants {
     public static final String RULE_37_TWO_H = "37-2-H";
     public static final String RULE_37_TWO_I = "37-2-I";
     public static final String RULE_4_4_4_I = "4.4.4";
+    public static final String RULE117 = "117 (C)";
+    public static final String RULE117B = "117 (B)";
+    public static final String RESIDENTIAL_SLOW_CHARGER = "Residential Slow Charger";
+    public static final String FOUR_WHEELER_FAST_CHARGER = "Four Wheeler Fast Charger";
+    public static final String FOUR_WHEELER_SLOW_CHARGER = "Four Wheeler Slow Charger";
+    public static final String THREE_WHEELER_FAST_CHARGER = "Three Wheeler Fast Charger";
+    public static final String THREE_WHEELER_SLOW_CHARGER = "Three Wheeler Slow Charger";
+    public static final String TWO_WHEELER_FAST_CHARGER = "Two Wheeler Fast Charger";
+    public static final String TWO_WHEELER_SLOW_CHARGER = "Two Wheeler Slow Charger";
+    public static final String PASSENGER_VEHICLE_FAST_CHARGER = "Passenger Vehicle Fast Charger";
+    public static final String PASSENGER_VEHICLE_SLOW_CHARGER = "Passenger Vehicle Slow Charger";
+    public static final String BASIS_EXPLANATION_FORMAT = 
+            "Total Vehicles = %s, Vehicles/Charger = %s, Calculated Requirement = %s";
+
 
     public static final String MINIMUMLABEL = "Minimum distance ";
 
@@ -369,6 +383,12 @@ public class EdcrReportConstants {
     public static final String SUB_RULE_55_7_DESC = "Maximum allowed area of balcony";
     public static final String SUB_RULE_55_7 = "55-7";
     public static final String HALL_NUMBER = "Hall Number";
+   
+    public static final String EV_PARKING_DESCRIPTION = "EV parking";
+
+    // Report output messages
+    public static final String EV_PARKING_REQUIRED = "Minimum 20% EV parking required";
+    public static final String EV_PARKING_PROVIDED = "%.2f%% EV parking provided";
 
     // Constants for rule identifiers and descriptions
     public static final String RULE_20 = "20";
@@ -451,6 +471,14 @@ public class EdcrReportConstants {
 
     public static final String SUBRULE_59_10 = "59-10";
     public static final String SUBRULE_59_10_DESC = "Minimum distance from canopy to plot boundary";
+    public static final String SECTION_CAR_PARKING = "26";
+    public static final String SECTION_TWO_WHEELER_PARKING = "26";
+    public static final String SECTION_VISITOR_PARKING = "26";
+
+    public static final String LABEL_CAR_PARKING = "Car Parking ";
+    public static final String LABEL_TWO_WHEELER_PARKING = "Two-Wheeler Parking ";
+    public static final String LABEL_VISITOR_PARKING = "Visitor Parking ";
+
 
     public static final String RULE_32 = "4.4.4 (XI)";
     public static final String PLANTATION_TREECOVER_DESCRIPTION = "Plantation tree cover";
@@ -493,7 +521,9 @@ public class EdcrReportConstants {
     public static final String WC_VENTILATION_WIDTH_UNIT = " m";
     public static final String WC_VENTILATION_AT_FLOOR = " at floor ";
  // Rule Numbers
-    public static final String RULE_VENT_01 = "VENT-01";
+    public static final String RULE_VENT_01 = "Clause 55";
+    public static final String SUB_RULE_SIDE_YARD = "83b (ii)";
+    public static final String SUB_RULE_NURSING = "83 (i) B";
 
     // Laundry Room Ventilation Descriptions
     public static final String LAUNDRY_VENTILATION_DESC = "Laundry Room Ventilation";

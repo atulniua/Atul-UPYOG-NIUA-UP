@@ -135,6 +135,10 @@ import static org.egov.edcr.constants.EdcrReportConstants.TWO_WHEEL_PARKING_AREA
 import static org.egov.edcr.constants.EdcrReportConstants.T_RULE;
 import static org.egov.edcr.constants.RuleKeyConstants.FOUR_P_TWO_P_ONE;
 import static org.egov.edcr.utility.DcrConstants.SQMTRS;
+import static org.egov.edcr.constants.EdcrReportConstants.EV_PARKING_DESCRIPTION;
+import static org.egov.edcr.constants.EdcrReportConstants.EV_PARKING_REQUIRED;
+import static org.egov.edcr.constants.EdcrReportConstants.EV_PARKING_PROVIDED;
+import static org.egov.edcr.constants.EdcrReportConstants.RULE117;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -336,6 +340,66 @@ public class Parking_Assam extends Parking {
 		addIndividualParkingReports(pl, parkingAreas);
 		LOGGER.info("******************Require no of Car Parking***************" + helper.totalRequiredCarParking);
 	}
+	
+	/**
+	 * Processes the EV parking area and adds report output details based on whether
+	 * the EV parking area meets the minimum required percentage (20%) of the total provided parking area.
+	 * 
+	 * The method calculates the total EV parking area from the plan details and compares it
+	 * with the sum of provided car, two-wheeler, and visitor parking areas. If the EV parking
+	 * area is less than 20% of the total, a "Not Accepted" report entry is added; otherwise,
+	 * an "Accepted" entry is added.
+	 * 
+	 * If no EV parking area is available or the calculated total parking area is zero,
+	 * the method logs the condition and returns without adding report details.
+	 * 
+	 * @param providedCarParkingArea        Total area provided for car parking.
+	 * @param providedTwoWheelerParkingArea Total area provided for two-wheeler parking.
+	 * @param providedVisitorsParkingArea   Total area provided for visitor parking.
+	 * @param pl                           The plan object containing parking details and report output.
+	 */
+	
+	public void evParkingProcess(
+	        double providedCarParkingArea,
+	        double providedTwoWheelerParkingArea,
+	        double providedVisitorsParkingArea,
+	        Plan pl
+	) {
+	    BigDecimal evParking = pl.getParkingDetails().getEvParking().stream()
+	            .map(Measurement::getArea)
+	            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	    // Proceed only if evParking is not null and greater than zero
+	    if (evParking == null || evParking.compareTo(BigDecimal.ZERO) <= 0) {
+	    	LOGGER.info("No EV parking area available, skipping report output.");
+	        return;
+	    }
+
+	    double evParkingArea = evParking.doubleValue();
+	    double totalProvidedArea = providedCarParkingArea + providedTwoWheelerParkingArea + providedVisitorsParkingArea;
+	    double totalArea = totalProvidedArea + evParkingArea;
+
+
+	    double evPercentage = evParkingArea / totalArea;
+	    LOGGER.info(String.format("EV parking area: %.2f, Total parking area: %.2f, Percentage: %.2f%%", evParkingArea, totalArea, evPercentage * 100));
+
+	    if (evPercentage < 0.20) {
+	        setReportOutputDetails(pl, RULE117, EV_PARKING_DESCRIPTION,
+	                EV_PARKING_REQUIRED,
+	                EV_PARKING_PROVIDED,
+	                Result.Not_Accepted.getResultVal());
+	        LOGGER.info("EV parking below 20% threshold, report marked Not Accepted.");
+	        return ;
+	    } else {
+	        setReportOutputDetails(pl, RULE117, EV_PARKING_DESCRIPTION,
+	        		 EV_PARKING_REQUIRED,
+		             EV_PARKING_PROVIDED,
+	                Result.Accepted.getResultVal());
+	        LOGGER.info("EV parking meets or exceeds 20% threshold, report marked Accepted.");
+	        return ;
+	    }
+	}
+
 
 	private double processCarParking(Plan pl, String occupancyType) {
 		BigDecimal totalCarpetArea = getTotalCarpetAreaByOccupancy(pl, occupancyType);
@@ -651,8 +715,7 @@ public class Parking_Assam extends Parking {
 			double ecsPerUnit = builtupArea / perArea;
 			double requiredECS = Math.ceil(ecsPerUnit) * noOfParking;
 			requiredTwoWheelerParkingArea = requiredECS * ecsArea;
-
-		}
+			}
 		return requiredTwoWheelerParkingArea;
 	}
 
@@ -829,7 +892,10 @@ public class Parking_Assam extends Parking {
 				+ parkingAreas.getBasement().doubleValue() + parkingAreas.getStilt().doubleValue();
 		double providedTwoWheelerParkingArea = parkingAreas.getTwoWheeler().doubleValue();
 		double providedVisitorsParkingArea = parkingAreas.getVisitor().doubleValue();
-
+	
+		
+		evParkingProcess(providedCarParkingArea, providedTwoWheelerParkingArea, providedVisitorsParkingArea, pl);
+		
 		// Check each requirement
 		boolean carOk = providedCarParkingArea >= requiredCarParkingArea;
 		boolean twoWheelerOk = providedTwoWheelerParkingArea >= requiredTwoWheelerParkingArea;
@@ -1603,7 +1669,30 @@ public class Parking_Assam extends Parking {
 								pl.getParkingDetails().getValidSpecialSlots() + NUMBERS,
 								Result.Not_Accepted.getResultVal());
 					}
+					
+					if (m.getWidth().compareTo(new BigDecimal(0)) > 0
+							&& m.getWidth().compareTo(new BigDecimal(3.6)) >= 0) {
+						setReportOutputDetails(pl, T_RULE, SP_PARKING, 1 + NUMBERS,
+								pl.getParkingDetails().getValidSpecialSlots() + NUMBERS,
+								Result.Accepted.getResultVal());
+					} else if (m.getWidth().compareTo(new BigDecimal(0)) > 0) {
+						setReportOutputDetails(pl, T_RULE, SP_PARKING, 1 + NUMBERS,
+								pl.getParkingDetails().getValidSpecialSlots() + NUMBERS,
+								Result.Not_Accepted.getResultVal());
+					}
+					BigDecimal minDist = m.getMinimumDistance() != null ? m.getMinimumDistance() : BigDecimal.ZERO;
+
+				    if (minDist.compareTo(BigDecimal.ZERO) > 0 && minDist.compareTo(new BigDecimal(30.0)) <= 0) {
+				        setReportOutputDetails(pl, T_RULE, SP_PARKING, 1 + NUMBERS,
+				                pl.getParkingDetails().getValidSpecialSlots() + NUMBERS,
+				                Result.Accepted.getResultVal());
+				    } else if (minDist.compareTo(BigDecimal.ZERO) > 0) {
+				        setReportOutputDetails(pl, T_RULE, SP_PARKING, 1 + NUMBERS,
+				                pl.getParkingDetails().getValidSpecialSlots() + NUMBERS,
+				                Result.Not_Accepted.getResultVal());
+				    }
 				}
+				
 			}
 		}
 
