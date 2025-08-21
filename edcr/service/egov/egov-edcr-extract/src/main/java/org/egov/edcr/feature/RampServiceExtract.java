@@ -175,6 +175,20 @@ public class RampServiceExtract extends FeatureExtract {
 	    return entranceHeight;
 	}
 	
+	/**
+	 * Adds ramp landings to the given {@link DARamp} by extracting and processing
+	 * layers from the DXF document within the given {@link PlanDetail}.
+	 * <p>
+	 * This method identifies all layers matching the specified landing name pattern,
+	 * processes polylines on these layers to create {@link RampLanding} objects,
+	 * and assigns these landings to the provided {@link DARamp} instance.
+	 * </p>
+	 *
+	 * @param pl The {@link PlanDetail} containing the DXF document and related data.
+	 * @param landingNamePattern The pattern used to identify landing layers within the DXF document.
+	 * @param daRamp The {@link DARamp} instance to which the extracted ramp landings will be assigned.
+	 */
+	
 	private void addRampLanding(PlanDetail pl, String landingNamePattern, DARamp daRamp) {
 		DXFDocument doc = pl.getDoc();
 	    List<String> landingLayerNames = Util.getLayerNamesLike(doc, landingNamePattern);

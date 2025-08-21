@@ -216,5 +216,15 @@ public class DxfFileConstants {
     public static final int DIMENSION_WIDTH_COLOR_CODE = 2;
     public static final int DIMENSION_HEIGHT_COLOR_CODE = 3;
     public static final int PORTICO_EXTERIOR_WALL_COLOR = 4;
+    
+    public static final String RIVER = "RIVER";
+    public static final String BHARALU_MORA_BONDAJAN = "BHARALU_MORA_BONDAJAN";
+    public static final String OTHER_CHANNELS = "OTHER_CHANNELS";
+    public static final String MINOR_DRAINS = "MINOR_DRAINS";
+    public static final String NOTIFIED_WATERBODIES = "NOTIFIED_WATERBODIES";
+    public static final String OTHER_NOTIFIED_WATERBODIES = "OTHER_NOTIFIED_WATERBODIES";
+    public static final String OTHER_LARGE_PONDS_WATERBODIES = "OTHER_LARGE_PONDS_WATERBODIES";
+    public static final String SMALL_PONDS = "SMALL_PONDS";
+    
 
 }

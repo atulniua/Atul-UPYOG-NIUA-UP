@@ -1,5 +1,5 @@
 /*
- * eGov  SmartCity eGovernance suite aims to improve the internal efficiency,transparency,
+ * UPYOG  SmartCity eGovernance suite aims to improve the internal efficiency,transparency,
  * accountability and the service delivery of the government  organizations.
  *
  *  Copyright (C) <2019>  eGovernments Foundation
@@ -49,6 +49,17 @@ package org.egov.common.entity.edcr;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+/**
+ * Represents a ramp landing in a building or structure.
+ * <p>
+ * This class extends {@link Measurement} and includes additional properties
+ * such as landing number, associated landings, lengths, widths, and whether
+ * the landing is closed. It is typically used in building plan scrutiny
+ * to verify ramp and landing measurements as per regulations.
+ * </p>
+ */
+
 
 public class RampLanding extends Measurement {
 

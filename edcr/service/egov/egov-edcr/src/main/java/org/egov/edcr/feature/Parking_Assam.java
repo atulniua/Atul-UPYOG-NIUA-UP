@@ -371,14 +371,13 @@ public class Parking_Assam extends Parking {
 
 	    // Proceed only if evParking is not null and greater than zero
 	    if (evParking == null || evParking.compareTo(BigDecimal.ZERO) <= 0) {
-	    	LOGGER.info("No EV parking area available, skipping report output.");
+	        LOGGER.info("No EV parking area available, skipping report output.");
 	        return;
 	    }
 
 	    double evParkingArea = evParking.doubleValue();
 	    double totalProvidedArea = providedCarParkingArea + providedTwoWheelerParkingArea + providedVisitorsParkingArea;
 	    double totalArea = totalProvidedArea + evParkingArea;
-
 
 	    double evPercentage = evParkingArea / totalArea;
 	    LOGGER.info(String.format("EV parking area: %.2f, Total parking area: %.2f, Percentage: %.2f%%", evParkingArea, totalArea, evPercentage * 100));
@@ -389,14 +388,12 @@ public class Parking_Assam extends Parking {
 	                EV_PARKING_PROVIDED,
 	                Result.Not_Accepted.getResultVal());
 	        LOGGER.info("EV parking below 20% threshold, report marked Not Accepted.");
-	        return ;
 	    } else {
 	        setReportOutputDetails(pl, RULE117, EV_PARKING_DESCRIPTION,
-	        		 EV_PARKING_REQUIRED,
-		             EV_PARKING_PROVIDED,
+	                 EV_PARKING_REQUIRED,
+	                 EV_PARKING_PROVIDED,
 	                Result.Accepted.getResultVal());
 	        LOGGER.info("EV parking meets or exceeds 20% threshold, report marked Accepted.");
-	        return ;
 	    }
 	}
 
