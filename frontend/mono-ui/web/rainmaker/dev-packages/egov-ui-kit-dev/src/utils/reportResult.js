@@ -1231,43 +1231,19 @@ class ShowField extends Component {
   getReportTitle = (rptName) => {
     let { metaData } = this.props;
     let reportName = rptName || metaData && metaData.reportDetails && metaData.reportDetails.summary || this.state.reportName || "";
-    reportName = reportName.toUpperCase();
-    let reportTitleArr = reportName && getLocaleLabels(reportName, reportName).split(/(?=[A-Z])/);
-    let reportTitle = "";
-    if (reportTitleArr) {
-      reportTitle = reportTitleArr.map((char) => {
-        if (char.length == 1) {
-          reportTitle = char + "";
-        } else {
-          reportTitle = " " + char;
-        }
-        return reportTitle;
-      });
-    }
+    if (!reportName) return "";
+    let localizedName = getLocaleLabels(reportName, reportName);
+    // Split camelCase and add spaces between words, but not before the first letter
+    let reportTitle = localizedName.replace(/([a-z])([A-Z])/g, '$1 $2');
     return reportTitle;
   };
 
   getXlsReportTitle = (rptName) => {
     let reportName = rptName || this.state.reportName || "";
-    reportName = reportName.toUpperCase();
-    let reportTitleArr = reportName && getLocaleLabels(reportName, reportName).split(/(?=[A-Z])/);
-    let reportTitle = "";
-    let reportHeaderName = "";
-    if (reportTitleArr) {
-      reportTitle = reportTitleArr.map((char) => {
-        if (char.length == 1) {
-          reportTitle = char + "";
-          reportHeaderName += char;
-        } else if (typeof char === "object") {
-          reportTitle = char.text + "";
-        } else {
-          reportTitle = " " + char;
-          reportHeaderName = reportHeaderName + " " + char;
-        }
-        return reportTitle;
-      });
-    }
-    // return reportTitle;
+    if (!reportName) return [""];
+    let localizedName = getLocaleLabels(reportName, reportName);
+    // Split camelCase and add spaces between words, but not before the first letter
+    let reportHeaderName = localizedName.replace(/([a-z])([A-Z])/g, '$1 $2');
     return [reportHeaderName];
   };
 
