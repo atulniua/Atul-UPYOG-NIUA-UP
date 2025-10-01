@@ -664,6 +664,19 @@ class ShowField extends Component {
   };
 
   getReportTitle = (rptName) => {
+    //let reportName = rptName || this.state.reportName;
+    //let reportTitleArr = reportName && reportName.split(/(?=[A-Z])/);
+    //let reportTitle = "";
+    //if (reportTitleArr) {
+      //reportTitle = reportTitleArr.map((char) => {
+        //if (char.length == 1) {
+          //reportTitle = char + "";
+        //} else {
+          //reportTitle = " " + char;
+        //}
+        //return reportTitle;
+      //});
+    //} // emoved this because it was causing unnecessary spacing in the report title. //
     let reportName = rptName || this.state.reportName;
     if (!reportName) return "";
     // Split camelCase and add spaces between words, but not before the first letter
@@ -673,6 +686,24 @@ class ShowField extends Component {
 
   getXlsReportTitle = (rptName) => {
     let reportName = rptName || this.state.reportName;
+    //let reportTitleArr = reportName && reportName.split(/(?=[A-Z])/);
+    //let reportTitle = "";
+    //let reportHeaderName = "";
+    //if (reportTitleArr) {
+      //reportTitle = reportTitleArr.map((char) => {
+        //if (char.length == 1) {
+          //reportTitle = char + "";
+          //reportHeaderName += char;
+        //} else if (typeof char === "object") {
+          //reportTitle = char.text + "";
+        //} else {
+          //reportTitle = " " + char;
+          //reportHeaderName = reportHeaderName + " " + char
+        //}
+        //return reportTitle;
+      //});
+    //}
+    // return reportTitle; //removed this because it was causing unnecessary spacing in the report title// 
     if (!reportName) return [""];
     // Split camelCase and add spaces between words, but not before the first letter
     let reportHeaderName = reportName.replace(/([a-z])([A-Z])/g, '$1 $2');
